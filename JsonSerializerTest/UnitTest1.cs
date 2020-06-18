@@ -30,7 +30,6 @@ namespace JsonSerializer
             Assert.AreEqual(expectedJson, serializedJson);
 
         }
-        [TestMethod]
      
     }
 }
