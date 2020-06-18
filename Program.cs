@@ -41,9 +41,20 @@ namespace ConsoleApp1
 
 					String[] array = (string[])(myField.GetValue(obj) as Array);
 
-					foreach (string s in array)
-					{
-					//	Console.WriteLine(s);
+                    for (int i = 0; i< array.Length; i++)
+                    {
+
+						array[i] = "\"" + array[i] + "\"";
+
+
+						if (i == 0)
+                        {
+							array[i] = "[" + array[i];
+                        } if (i == array.Length - 1)
+                        {
+							array[i] =  array[i] + "]";
+
+						}
 					}
 
 					fieldValue = string.Join(",", array);
@@ -69,14 +80,35 @@ namespace ConsoleApp1
 				Console.WriteLine(fieldNamesAndTypes[i]);
 			}
 
-			var json = "";
 
-			for (int i = 0; i < fieldNamesAndTypes.Count / 2; i++)
+			var json = "{";
+			for (int i = 0; i < fieldNamesAndTypes.Count; i = i + 3)
 			{
 
-				json += "{\"" + fieldNamesAndTypes[i] + "\":" + fieldNamesAndTypes[i + 1] + "\",";
+                if (fieldNamesAndTypes[i+1].Equals("Int32"))
+                {
+					json += "\"" + fieldNamesAndTypes[i] + "\":" + fieldNamesAndTypes[i + 2];
+
+				}
+				else if (fieldNamesAndTypes[i + 1].Equals("String"))
+                {
+					json += "\"" + fieldNamesAndTypes[i] + "\":\"" + fieldNamesAndTypes[i + 2] + "\"";
+
+				}
+				else if(fieldNamesAndTypes[i + 1].Equals("String[]"))
+                {
+					json += "\"" + fieldNamesAndTypes[i] + "\":" + fieldNamesAndTypes[i + 2];
+
+				}
+
+				if (i != fieldNamesAndTypes.Count -3)
+                {
+					json += ",";
+                }
+
 
 			}
+			json += "}";
 
 			Console.WriteLine(json);
 
