@@ -9,22 +9,20 @@ namespace JsonSerializerProject
 	public class Serializer
 	{
 	
-		public static string Analyse(Object obj)
+		public static string serializeToJson(Object obj)
 		{
 
-			Console.WriteLine("start");
-
-			List<string> fieldNamesAndTypes = StoreFieldsInfoIntoList(obj);
-
-			for (int i = 0; i < fieldNamesAndTypes.Count; i++)
-			{
-				Console.WriteLine(fieldNamesAndTypes[i]);
+            try{
+				List<string> fieldNamesAndTypes = StoreFieldsInfoIntoList(obj);
+				string json = serializeToJson(fieldNamesAndTypes);
+				return json;
 			}
+            catch(Exception ex){
+				
+				return "There was a problem!";
+            }
 
-			string json = serializeToJson(fieldNamesAndTypes);
-
-
-			return json;
+			
 		}
 
 		private static List<string> StoreFieldsInfoIntoList(object obj)
@@ -32,10 +30,8 @@ namespace JsonSerializerProject
 			List<string> fieldNamesAndTypes = new List<string>();
 			Type type = obj.GetType();
 			FieldInfo[] fields = type.GetFields();
-			Console.WriteLine("fields and their types: ");
 			foreach (FieldInfo myField in fields)
 			{
-				// Console.WriteLine(myField.ToString());
 
 				string fieldName = myField.Name;
 				string fieldType = myField.FieldType.Name;

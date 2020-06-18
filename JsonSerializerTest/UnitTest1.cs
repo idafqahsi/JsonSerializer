@@ -7,14 +7,30 @@ namespace JsonSerializer
     public class UnitTest1
     {
         [TestMethod]
-        public void TestMethod1()
+        public void ComparingTwoEqualJsons()
         {
 
-            Configuration config = new Configuration(1, "Palestine", new[] {"123","456" });
-            string json = Serializer.Analyse(config);
-            string json2 = "{\"Version\":2,\"DomainName\":\"www.training.com\",\"IpAddresses\":[\"192.168.1.8\",\"192.168.1.2\"]}";
-            Assert.AreEqual(json, json2);
+            Configuration config = new Configuration(2, "www.training.com", new[] { "192.168.1.8", "192.168.1.2" });
+
+
+            string serializedJson = Serializer.serializeToJson(config);
+            string expectedJson = "{\"Version\":2,\"DomainName\":\"www.training.com\",\"IpAddresses\":[\"192.168.1.8\",\"192.168.1.2\"]}";
+            Assert.AreEqual(expectedJson, serializedJson);
 
         }
+        [TestMethod]
+        public void ComparingUnequalJsons()
+        {
+
+            Configuration config = new Configuration(3, "www.google.com", new[] { "192.168.1.8", "192.168.1.2" });
+
+
+            string serializedJson = Serializer.serializeToJson(config);
+            string expectedJson = "{\"Version\":2,\"DomainName\":\"www.training.com\",\"IpAddresses\":[\"192.168.1.8\",\"192.168.1.2\"]}";
+            Assert.AreEqual(expectedJson, serializedJson);
+
+        }
+        [TestMethod]
+     
     }
 }
