@@ -1,121 +1,104 @@
 ﻿using System;
-using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Reflection;
 
 namespace JsonSerializerProject
 {
-	public class Serializer
-	{
-	
-		public static string serializeToJson(Object obj)
-		{
+    public class Serializer
+    {
+        public static string serializeToJson(Object obj)
+        {
+            try
+            {
+                List<string> fieldNamesAndTypes = StoreFieldsInfoIntoList(obj);
+                return serializeListToJson(fieldNamesAndTypes); ;
+            }
+            catch (Exception ex)
+            {
+                return "There was a problem serializing to json!";
+            }
+        }
 
-            try{
-				List<string> fieldNamesAndTypes = StoreFieldsInfoIntoList(obj);
-				string json = serializeToJson(fieldNamesAndTypes);
-				return json;
-			}
-            catch(Exception ex){
-				
-				return "There was a problem!";
+        private static List<string> StoreFieldsInfoIntoList(object obj)
+        {
+            List<string> fieldNamesAndTypes = new List<string>();
+            FieldInfo[] fields = obj.GetType().GetFields();
+            foreach (FieldInfo myField in fields)
+            {
+                string fieldName = myField.Name;
+                string fieldType = myField.FieldType.Name;
+                string fieldValue = getFieldValue(obj, myField, fieldType);
+
+                fieldNamesAndTypes.Add(fieldName);
+                fieldNamesAndTypes.Add(fieldType);
+                fieldNamesAndTypes.Add(fieldValue);
             }
 
-			
-		}
+            return fieldNamesAndTypes;
+        }
 
-		private static List<string> StoreFieldsInfoIntoList(object obj)
-		{
-			List<string> fieldNamesAndTypes = new List<string>();
-			Type type = obj.GetType();
-			FieldInfo[] fields = type.GetFields();
-			foreach (FieldInfo myField in fields)
-			{
+        private static string getFieldValue(object obj, FieldInfo myField, string fieldType)
+        {
+            string fieldValue;
+            if (fieldType.Equals("String[]"))
+            {
+                String[] array = (string[])(myField.GetValue(obj) as Array);
 
-				string fieldName = myField.Name;
-				string fieldType = myField.FieldType.Name;
-				string fieldValue = "unknown";
+                for (int i = 0; i < array.Length; i++)
+                {
 
-				fieldValue = getFieldsValues(obj, myField, fieldType);
+                    array[i] = "\"" + array[i] + "\"";
 
-				fieldNamesAndTypes.Add(fieldName);
-				fieldNamesAndTypes.Add(fieldType);
-				fieldNamesAndTypes.Add(fieldValue);
+                    if (i == 0)
+                    {
+                        array[i] = "[" + array[i];
+                    }
+                    if (i == array.Length - 1)
+                    {
+                        array[i] = array[i] + "]";
 
-				// "{"Version":2,"DomainName":"www.training.com","IpAddresses":["192.168.1.8","192.168.1.2"]}"
+                    }
+                }
 
-			}
+                fieldValue = string.Join(",", array);
 
-			return fieldNamesAndTypes;
-		}
+            }
+            else
+            {
+                fieldValue = myField.GetValue(obj).ToString();
+            }
 
-		private static string getFieldsValues(object obj, FieldInfo myField, string fieldType)
-		{
-			string fieldValue;
-			if (fieldType.Equals("String[]"))
-			{
-				String[] array = (string[])(myField.GetValue(obj) as Array);
+            return fieldValue;
+        }
 
-				for (int i = 0; i < array.Length; i++)
-				{
+        private static string serializeListToJson(List<string> fieldNamesAndTypes)
+        {
+            var json = "{";
+            for (int i = 0; i < fieldNamesAndTypes.Count; i += 3)
+            {
 
-					array[i] = "\"" + array[i] + "\"";
+                switch (fieldNamesAndTypes[i + 1])
+                {
+                    case ("Int32"):
+                    case ("String[]"):
 
-					if (i == 0)
-					{
-						array[i] = "[" + array[i];
-					}
-					if (i == array.Length - 1)
-					{
-						array[i] = array[i] + "]";
+                        json += "\"" + fieldNamesAndTypes[i] + "\":" + fieldNamesAndTypes[i + 2];
 
-					}
-				}
+                        break;
 
-				fieldValue = string.Join(",", array);
-				//fieldValue = String.Concat(array);
-				//fieldValue = "ah";
+                    case ("String"):
+                        json += "\"" + fieldNamesAndTypes[i] + "\":\"" + fieldNamesAndTypes[i + 2] + "\"";
+                        break;
+                }
 
-			}
-			else
-			{
-				fieldValue = myField.GetValue(obj).ToString();
-			}
+                if (i != fieldNamesAndTypes.Count - 3)
+                {
+                    json += ",";
+                }
 
-			return fieldValue;
-		}
-
-		private static string serializeToJson(List<string> fieldNamesAndTypes)
-		{
-			var json = "{";
-			for (int i = 0; i < fieldNamesAndTypes.Count; i = i + 3)
-			{
-
-				if (fieldNamesAndTypes[i + 1].Equals("Int32"))
-				{
-					json += "\"" + fieldNamesAndTypes[i] + "\":" + fieldNamesAndTypes[i + 2];
-
-				}
-				else if (fieldNamesAndTypes[i + 1].Equals("String"))
-				{
-					json += "\"" + fieldNamesAndTypes[i] + "\":\"" + fieldNamesAndTypes[i + 2] + "\"";
-
-				}
-				else if (fieldNamesAndTypes[i + 1].Equals("String[]"))
-				{
-					json += "\"" + fieldNamesAndTypes[i] + "\":" + fieldNamesAndTypes[i + 2];
-
-				}
-
-				if (i != fieldNamesAndTypes.Count - 3)
-				{
-					json += ",";
-				}
-
-			}
-			json += "}";
-			return json;
-		}
-	}
+            }
+            json += "}";
+            return json;
+        }
+    }
 }
