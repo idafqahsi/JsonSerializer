@@ -14,15 +14,32 @@ namespace ConsoleApp1
 				"123",
 				"456"
 			});
-			List<string> fields = NewMethod(config);
+			List<string> fields = Analyse(config);
 
 			Console.ReadLine();
 		}
-		private static List<string> NewMethod(Object obj)
+		private static List<string> Analyse(Object obj)
 		{
-			List<string> fieldNamesAndTypes = new List<string>();
 
 			Console.WriteLine("start");
+
+			List<string> fieldNamesAndTypes = StoreFieldsInfoIntoList(obj);
+
+			for (int i = 0; i < fieldNamesAndTypes.Count; i++)
+			{
+				Console.WriteLine(fieldNamesAndTypes[i]);
+			}
+
+			string json = serializeToJson(fieldNamesAndTypes);
+
+			Console.WriteLine(json);
+
+			return fieldNamesAndTypes;
+		}
+
+		private static List<string> StoreFieldsInfoIntoList(object obj)
+		{
+			List<string> fieldNamesAndTypes = new List<string>();
 			Type type = obj.GetType();
 			FieldInfo[] fields = type.GetFields();
 			Console.WriteLine("fields and their types: ");
@@ -34,38 +51,7 @@ namespace ConsoleApp1
 				string fieldType = myField.FieldType.Name;
 				string fieldValue = "unknown";
 
-				if (fieldType.Equals("String[]"))
-				{
-					// fieldValue = "xd";
-					//  var arr = myField.GetValue(obj);
-
-					String[] array = (string[])(myField.GetValue(obj) as Array);
-
-                    for (int i = 0; i< array.Length; i++)
-                    {
-
-						array[i] = "\"" + array[i] + "\"";
-
-
-						if (i == 0)
-                        {
-							array[i] = "[" + array[i];
-                        } if (i == array.Length - 1)
-                        {
-							array[i] =  array[i] + "]";
-
-						}
-					}
-
-					fieldValue = string.Join(",", array);
-					//fieldValue = String.Concat(array);
-					//fieldValue = "ah";
-
-				}
-				else
-				{
-					fieldValue = myField.GetValue(obj).ToString();
-				}
+				fieldValue = getFieldsValues(obj, myField, fieldType);
 
 				fieldNamesAndTypes.Add(fieldName);
 				fieldNamesAndTypes.Add(fieldType);
@@ -75,44 +61,75 @@ namespace ConsoleApp1
 
 			}
 
-			for (int i = 0; i < fieldNamesAndTypes.Count; i++)
+			return fieldNamesAndTypes;
+		}
+
+		private static string getFieldsValues(object obj, FieldInfo myField, string fieldType)
+		{
+			string fieldValue;
+			if (fieldType.Equals("String[]"))
 			{
-				Console.WriteLine(fieldNamesAndTypes[i]);
+				String[] array = (string[])(myField.GetValue(obj) as Array);
+
+				for (int i = 0; i < array.Length; i++)
+				{
+
+					array[i] = "\"" + array[i] + "\"";
+
+					if (i == 0)
+					{
+						array[i] = "[" + array[i];
+					}
+					if (i == array.Length - 1)
+					{
+						array[i] = array[i] + "]";
+
+					}
+				}
+
+				fieldValue = string.Join(",", array);
+				//fieldValue = String.Concat(array);
+				//fieldValue = "ah";
+
+			}
+			else
+			{
+				fieldValue = myField.GetValue(obj).ToString();
 			}
 
+			return fieldValue;
+		}
 
+		private static string serializeToJson(List<string> fieldNamesAndTypes)
+		{
 			var json = "{";
 			for (int i = 0; i < fieldNamesAndTypes.Count; i = i + 3)
 			{
 
-                if (fieldNamesAndTypes[i+1].Equals("Int32"))
-                {
+				if (fieldNamesAndTypes[i + 1].Equals("Int32"))
+				{
 					json += "\"" + fieldNamesAndTypes[i] + "\":" + fieldNamesAndTypes[i + 2];
 
 				}
 				else if (fieldNamesAndTypes[i + 1].Equals("String"))
-                {
+				{
 					json += "\"" + fieldNamesAndTypes[i] + "\":\"" + fieldNamesAndTypes[i + 2] + "\"";
 
 				}
-				else if(fieldNamesAndTypes[i + 1].Equals("String[]"))
-                {
+				else if (fieldNamesAndTypes[i + 1].Equals("String[]"))
+				{
 					json += "\"" + fieldNamesAndTypes[i] + "\":" + fieldNamesAndTypes[i + 2];
 
 				}
 
-				if (i != fieldNamesAndTypes.Count -3)
-                {
+				if (i != fieldNamesAndTypes.Count - 3)
+				{
 					json += ",";
-                }
-
+				}
 
 			}
 			json += "}";
-
-			Console.WriteLine(json);
-
-			return fieldNamesAndTypes;
+			return json;
 		}
 	}
 }
